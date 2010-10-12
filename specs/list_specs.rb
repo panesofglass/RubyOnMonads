@@ -1,4 +1,4 @@
-require "../list"
+require "../lib/list"
 require "spec"
 
 describe "Use a list monad" do

@@ -1,4 +1,4 @@
-require "../list"
+require "../lib/list"
 require "spec"
 
 describe "Create a FuncList" do

@@ -1,4 +1,4 @@
-require "../identity"
+require "../lib/identity"
 require "spec"
 
 describe "Use an identity monad" do

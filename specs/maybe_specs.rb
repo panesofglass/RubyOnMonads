@@ -1,4 +1,4 @@
-require "../maybe"
+require "../lib/maybe"
 require "spec"
 
 describe "Use a maybe monad" do
@@ -52,6 +52,34 @@ describe "Initialize a nil Maybe monad" do
   it "should bind to a method and return nil" do
     result = @subject.bind { |i| Maybe.new( i+2 ) }
     result.value.should == nil
+  end
+end
+
+describe "Test calculating a sum of the reciprocal of a set of numbers" do
+  def divide(x, y)
+    y == 0 ? Maybe.new(nil) : Maybe.new(x/y)
+  end
+
+  def totalResistance(r1, r2, r3)
+    divide(1, r1).bind do |x|
+      divide(1, r2).bind do |y|
+        divide(1, r3).bind do |z|
+          divide(1, x + y + z)
+        end
+      end
+    end
+  end
+
+  describe "given 0.01, 0.75, and 0.33" do
+    it "should return 0.009581881533" do
+      totalResistance(0.01, 0.75, 0.33).value.should == 1.0/(1.0/0.01+1.0/0.75+1.0/0.33)
+    end
+  end
+
+  describe "given 0.00, 0.55, and 0.75" do
+    it "should return nil" do
+      totalResistance(0.00, 0.55, 0.75).value.should == nil
+    end
   end
 end
 
