@@ -5,7 +5,11 @@ class Maybe
     @value = value
   end
 
-  def return x
+  def Maybe.empty
+    Maybe.new(nil)
+  end
+
+  def Maybe.return x
     Maybe.new(x)
   end
 

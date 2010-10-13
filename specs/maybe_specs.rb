@@ -57,7 +57,7 @@ end
 
 describe "Test calculating a sum of the reciprocal of a set of numbers" do
   def divide(x, y)
-    y == 0 ? Maybe.new(nil) : Maybe.new(x/y)
+    Maybe.new(y == 0 ? nil : x/y)
   end
 
   def totalResistance(r1, r2, r3)
