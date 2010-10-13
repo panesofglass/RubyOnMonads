@@ -1,4 +1,4 @@
-require 'maybe'
+require File.expand_path(File.dirname(__FILE__) + 'maybe')
 
 module FEnumerable
 
@@ -39,7 +39,7 @@ module FEnumerable
     end
   end
 
-  def fold(seed, &f) =
+  def fold(seed, &f)
     e = self.call
     loop = lambda do |v, acc|
       if (v.empty?)
@@ -51,34 +51,39 @@ module FEnumerable
     loop.call(e.call, seed)
   end
 
-  def FEnumerable.unfold(seed, &generator) =
+  def FEnumerable.unfold(seed, &generator)
     lambda do
+      nxt = seed
       lambda do
         res = generator.call(seed)
         if (res.empty?)
           res
         else
-          next = res.value[1]
+          nxt = res.value[1]
           Maybe.new(res.value[0])
         end
       end
     end
   end
 
-  def filter(&f) =
+  def filter(&f)
     self.bind { |t| f.call(t) ? FEnumerable.return(t) : FEnumerable.empty }
   end
 
-  def map(&selector) =
+  def map(&selector)
     self.bind { |t| selector.call(t) }
   end
 
-  def FEnumerable.range(from, length) =
-    FEnumerable.unfold from { |x| x < from + length ? Maybe.new([x,x+1]) : Maybe.empty }
+  def FEnumerable.range(from, length)
+    FEnumerable.unfold(from) do |x|
+      x < from + length ? Maybe.new([x,x+1]) : Maybe.empty
+    end
   end
 
   def sum
-    self.fold 0 { |sum, x| sum + x }
+    self.fold(0) do |sum, x|
+      sum + x
+    end
   end
 
 end
@@ -108,7 +113,7 @@ module FObservable
     end
   end
 
-  def fold(seed, &f) =
+  def fold(seed, &f)
     result = seed
     stop = false
     self.call lambda do |x|
@@ -121,7 +126,7 @@ module FObservable
     result
   end
 
-  def FObservable.unfold(seed, &generator) =
+  def FObservable.unfold(seed, &generator)
     lambda do |o|
       loop = lambda do |t|
         res = generator.call(t)
@@ -136,20 +141,24 @@ module FObservable
     end
   end
 
-  def filter(&f) =
+  def filter(&f)
     self.bind { |t| f.call(t) ? FObservable.return(t) : FObservable.empty }
   end
 
-  def map(&selector) =
+  def map(&selector)
     self.bind { |t| selector.call(t) }
   end
 
-  def FObservable.range(from, length) =
-    FObservable.unfold from { |x| x < from + length ? Maybe.new([x,x+1]) : Maybe.empty }
+  def FObservable.range(from, length)
+    FObservable.unfold(from) do |x|
+      x < from + length ? Maybe.new([x,x+1]) : Maybe.empty
+    end
   end
 
   def sum
-    self.fold 0 { |sum, x| sum + x }
+    self.fold(0) do |sum, x|
+      sum + x
+    end
   end
 
 end
