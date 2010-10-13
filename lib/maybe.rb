@@ -9,6 +9,10 @@ class Maybe
     Maybe.new(nil)
   end
 
+  def empty?
+    @value.nil?
+  end
+
   def Maybe.return x
     Maybe.new(x)
   end

@@ -3,59 +3,59 @@ require 'maybe'
 module FEnumerable
 
   def FEnumerable.empty
-    lambda { lambda { Maybe.new(nil) } }
+    lambda { lambda { Maybe.empty } }
   end
 
   def FEnumerable.return(value)
     lambda do
       i = 0
-      lambda { Maybe.new((i += 1) == 1 ? value : nil) }
+      lambda { i+=1 == 1 ? Maybe.new(value) : Maybe.empty }
     end
   end
 
   def bind(&selector)
     lambda do
-      e = self.call()
+      e = self.call
 
-      lastOuter = Maybe.new(nil)
-      lastInner = Maybe.new(nil)
+      lastOuter = Maybe.empty
+      lastInner = Maybe.empty
       innerE = nil
 
       lambda do
         begin
-          while (lastInner.value.nil?) do
-            lastOuter = e.call()
-            if (lastOuter.value.nil?)
-              return Maybe.new(nil)
+          while (lastInner.empty?) do
+            lastOuter = e.call
+            if (lastOuter.empty?)
+              return Maybe.empty
             else
               innerE = selector.call(lastOuter.value)
             end
-            lastInner = innerE.call()
-            return lastInner unless lastInner.value.nil?
+            lastInner = innerE.call
+            return lastInner unless lastInner.empty?
           end
-          lastInner = innerE.call()
-        end while (lastInner.value.nil?)
+          lastInner = innerE.call
+        end while (lastInner.empty?)
       end
     end
   end
 
   def fold(seed, &f) =
-    e = self.call()
+    e = self.call
     loop = lambda do |v, acc|
-      if (v.value.nil?)
+      if (v.empty?)
         acc
       else
-        loop.call(e.call(), f.call(acc, v.value))
+        loop.call(e.call, f.call(acc, v.value))
       end
     end
-    loop.call(e.call(), seed)
+    loop.call(e.call, seed)
   end
 
   def FEnumerable.unfold(seed, &generator) =
     lambda do
       lambda do
         res = generator.call(seed)
-        if (res.value.nil?)
+        if (res.empty?)
           res
         else
           next = res.value[1]
@@ -86,23 +86,23 @@ end
 module FObservable
 
   def FObservable.empty
-    lambda { |o| o.call Maybe.new(nil) }
+    lambda { |o| o.call Maybe.empty }
   end
 
   def FObservable.return(value)
     lambda do |o|
       o.call Maybe.new(value)
-      o.call Maybe.new(nil)
+      o.call Maybe.empty
     end
   end
 
   def bind(&selector)
     lambda do |o|
       self.call do |x|
-        if (x.value.nil?)
-          o.call Maybe.new(nil)
+        if (x.empty?)
+          o.call Maybe.empty
         else
-          selector.call(x.value).call { |y| o.call(y) unless y.value.nil? }
+          selector.call(x.value).call { |y| o.call(y) unless y.empty? }
         end
       end
     end
@@ -112,7 +112,7 @@ module FObservable
     result = seed
     stop = false
     self.call lambda do |x|
-      if (x.value.nil?)
+      if (x.empty?)
         stop = true
       elsif (!stop)
         result = f.call(result, x)
@@ -125,7 +125,7 @@ module FObservable
     lambda do |o|
       loop = lambda do |t|
         res = generator.call(t)
-        if (res.value.nil?)
+        if (res.empty?)
           o.call(res)
         else
           o.call(Maybe.new(res.value[0]))
